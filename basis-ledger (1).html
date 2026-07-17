@@ -1,0 +1,597 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>basis — cut AI run-rate 20–50%. Verified in your own billing data.</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#07070f;
+  --bg2:#0c0c18;
+  --panel:#101021;
+  --line:#22223a;
+  --line2:#2e2e4d;
+  --txt:#e9eaf4;
+  --dim:#9497b3;
+  --faint:#5e6180;
+  --violet:#8b5cf6;
+  --blue:#3b82f6;
+  --cyan:#22d3ee;
+  --grad:linear-gradient(90deg,#8b5cf6,#3b82f6 55%,#22d3ee);
+  --disp:'Space Grotesk',sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--txt);font-family:var(--disp);font-size:16px;line-height:1.6;-webkit-font-smoothing:antialiased}
+::selection{background:#8b5cf6;color:#fff}
+.wrap{max-width:1140px;margin:0 auto;padding:0 32px}
+a{color:inherit}
+.gt{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.mono{font-family:var(--mono)}
+
+/* eyebrow */
+.tag{font-family:var(--mono);font-size:11.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--cyan);display:inline-flex;align-items:center;gap:10px}
+.tag::before{content:"//";color:var(--violet)}
+
+/* nav */
+nav{position:sticky;top:0;z-index:50;background:rgba(7,7,15,.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+.nav-in{display:flex;align-items:center;justify-content:space-between;height:60px}
+.logo{font-family:var(--mono);font-weight:700;font-size:17px;text-decoration:none;letter-spacing:-.01em}
+.logo .p{color:var(--faint)}
+.nav-links{display:flex;gap:26px;align-items:center;font-family:var(--mono);font-size:12.5px}
+.nav-links a{text-decoration:none;color:var(--dim)}
+.nav-links a:hover{color:var(--txt)}
+.btn{display:inline-flex;align-items:center;gap:8px;font-family:var(--mono);font-weight:700;font-size:13.5px;letter-spacing:.02em;text-decoration:none;padding:13px 22px;border-radius:6px;transition:all .15s ease;cursor:pointer;border:none}
+.btn-grad{background:var(--grad);color:#05050c}
+.btn-grad:hover{transform:translateY(-1px);box-shadow:0 0 34px rgba(93,102,246,.45)}
+.btn-line{border:1px solid var(--line2);color:var(--txt);background:transparent}
+.btn-line:hover{border-color:var(--cyan);color:var(--cyan)}
+.btn-sm{padding:9px 15px;font-size:12px}
+
+/* hero */
+.hero{padding:84px 0 0;position:relative;overflow:hidden}
+.hero::before{content:"";position:absolute;top:-260px;left:50%;transform:translateX(-50%);width:900px;height:520px;background:radial-gradient(ellipse at center,rgba(99,80,246,.22),rgba(34,211,238,.06) 55%,transparent 72%);pointer-events:none}
+.hero-grid{position:relative;display:grid;grid-template-columns:1.25fr .9fr;gap:64px;align-items:center}
+.hero .pre{display:flex;flex-wrap:wrap;gap:10px 22px;align-items:center;margin-bottom:30px;font-family:var(--mono);font-size:12px;color:var(--dim)}
+.hero .pre b{color:var(--txt);font-weight:500}
+.hero h1{font-size:clamp(34px,4.6vw,56px);font-weight:700;line-height:1.08;letter-spacing:-.02em}
+.hero .sub{margin-top:24px;font-size:17px;color:var(--dim);max-width:56ch;line-height:1.7}
+.hero .sub b{color:var(--txt);font-weight:600}
+.hero-cta{margin-top:34px;display:flex;gap:14px;flex-wrap:wrap}
+
+/* hero ledger panel */
+.ledger{background:var(--panel);border:1px solid var(--line);border-radius:12px;overflow:hidden;font-family:var(--mono);box-shadow:0 30px 80px rgba(0,0,0,.5)}
+.ledger-head{display:flex;justify-content:space-between;align-items:center;padding:14px 20px;border-bottom:1px solid var(--line);font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:var(--faint)}
+.ledger-head .live{display:flex;align-items:center;gap:7px;color:var(--cyan)}
+.ledger-head .live::before{content:"";width:7px;height:7px;border-radius:50%;background:var(--cyan);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.25}}
+.lrow{display:flex;justify-content:space-between;align-items:baseline;padding:13px 20px;border-bottom:1px solid var(--line);font-size:13px;gap:12px}
+.lrow .f{color:var(--dim)}
+.lrow .a{white-space:nowrap}
+.lrow .a s{color:var(--faint);margin-right:8px}
+.lrow .a b{font-weight:700;color:var(--txt)}
+.lrow.sum{background:var(--bg2)}
+.lrow.sum .f{color:var(--txt);font-weight:700}
+.lrow.sum .a b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-size:15px}
+.lfoot{padding:12px 20px;font-size:11px;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){.ledger-head .live::before{animation:none}}
+
+/* trio */
+.trio{margin-top:64px;display:grid;grid-template-columns:repeat(3,1fr);border:1px solid var(--line);border-radius:12px;overflow:hidden;background:var(--bg2)}
+.trio .cell{padding:26px 30px;border-right:1px solid var(--line)}
+.trio .cell:last-child{border-right:none}
+.trio .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint)}
+.trio .v{font-weight:700;font-size:26px;margin:8px 0 3px;letter-spacing:-.01em}
+.trio .d{font-family:var(--mono);font-size:11.5px;color:var(--dim)}
+
+/* ticker */
+.ticker{margin-top:72px;border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;background:var(--bg2)}
+.ticker-track{display:flex;width:max-content;animation:tick 40s linear infinite;padding:15px 0}
+.ticker:hover .ticker-track{animation-play-state:paused}
+@keyframes tick{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+.ti{display:flex;align-items:baseline;gap:10px;padding:0 40px;border-right:1px solid var(--line);white-space:nowrap;font-family:var(--mono)}
+.ti .n{font-weight:700;font-size:19px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.ti .t{font-size:12.5px;color:var(--dim)}
+.ti .s{font-size:10.5px;color:var(--faint)}
+@media (prefers-reduced-motion:reduce){.ticker-track{animation:none;flex-wrap:wrap;width:auto}}
+
+/* sections */
+section{padding:100px 0}
+.sh{max-width:700px;margin-bottom:52px}
+.sh h2{font-size:clamp(28px,3.3vw,40px);font-weight:700;letter-spacing:-.02em;line-height:1.15;margin:14px 0 16px}
+.sh p{color:var(--dim);font-size:16.5px;line-height:1.7}
+.rule{height:1px;background:linear-gradient(90deg,transparent,#8b5cf6 30%,#22d3ee 70%,transparent);border:none;opacity:.6}
+
+/* deliverables table */
+.dtable{border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.drow{display:grid;grid-template-columns:64px 220px 1fr 200px;gap:24px;padding:28px 28px;border-bottom:1px solid var(--line);align-items:start;background:var(--bg);transition:background .2s}
+.drow:last-child{border-bottom:none}
+.drow:hover{background:var(--panel)}
+.drow .n{font-family:var(--mono);font-size:13px;color:var(--faint)}
+.drow h3{font-size:18px;font-weight:700;letter-spacing:-.01em}
+.drow p{font-size:14px;color:var(--dim);line-height:1.65}
+.drow .imp{font-family:var(--mono);font-size:12px;color:var(--cyan);text-align:right;border:1px solid var(--line2);border-radius:99px;padding:6px 13px;justify-self:end;white-space:nowrap}
+.dhead{display:grid;grid-template-columns:64px 220px 1fr 200px;gap:24px;padding:13px 28px;border-bottom:1px solid var(--line);font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);background:var(--bg2)}
+.dhead span:last-child{text-align:right}
+
+/* process */
+.proc{counter-reset:step}
+.pstep{display:grid;grid-template-columns:56px 1fr 300px;gap:28px;padding:34px 0;border-bottom:1px solid var(--line)}
+.pstep:last-child{border-bottom:none}
+.pstep .idx{font-family:var(--mono);font-size:13px;color:var(--faint);padding-top:4px}
+.pstep .idx b{display:block;font-size:22px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.pstep h3{font-size:19px;font-weight:700;margin-bottom:10px;letter-spacing:-.01em}
+.pstep p{font-size:14.5px;color:var(--dim);max-width:60ch}
+.pstep .art{font-family:var(--mono);font-size:12px;color:var(--dim);border-left:2px solid;border-image:linear-gradient(180deg,#8b5cf6,#22d3ee) 1;padding-left:16px;align-self:start;padding-top:2px;padding-bottom:2px}
+.pstep .art .k{display:block;font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:5px}
+.pstep .art b{color:var(--txt);font-weight:500}
+
+/* stack */
+.stack{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--line);border:1px solid var(--line);border-radius:12px;overflow:hidden}
+.scell{background:var(--bg2);padding:26px 12px;text-align:center;font-family:var(--mono);font-size:13.5px;color:var(--dim);transition:all .15s}
+.scell:hover{color:var(--txt);background:var(--panel);text-shadow:0 0 22px rgba(34,211,238,.5)}
+
+/* frameworks */
+.fw{display:grid;grid-template-columns:repeat(3,1fr);gap:20px}
+.fwc{border:1px solid var(--line);border-radius:10px;padding:24px 26px;background:var(--bg2)}
+.fwc h3{font-size:15.5px;font-weight:700;margin-bottom:5px}
+.fwc p{font-family:var(--mono);font-size:11.5px;color:var(--faint)}
+
+/* cases */
+.cases{display:grid;grid-template-columns:repeat(3,1fr);gap:22px}
+.case{border:1px solid var(--line);border-radius:12px;background:var(--panel);overflow:hidden;display:flex;flex-direction:column}
+.chead{padding:18px 22px;border-bottom:1px solid var(--line);background:var(--bg2)}
+.chead .cid{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--cyan)}
+.chead h3{font-size:14.5px;font-weight:600;margin-top:6px;color:var(--dim);line-height:1.4}
+.cbody{padding:6px 22px 14px;flex:1;font-family:var(--mono)}
+.crw{display:flex;justify-content:space-between;align-items:baseline;padding:11px 0;border-bottom:1px dashed var(--line);gap:10px;font-size:12.5px}
+.crw .l{color:var(--dim)}
+.crw .a{white-space:nowrap}
+.crw .a s{color:var(--faint);margin-right:6px}
+.crw .a b{color:var(--txt);font-weight:700}
+.crw.tot{border-bottom:none;padding-top:14px}
+.crw.tot .l{color:var(--txt);font-weight:700}
+.crw.tot .a b{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent;font-size:14px}
+.clev{padding:16px 22px 22px;border-top:1px solid var(--line)}
+.clev .k{font-family:var(--mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--faint);margin-bottom:9px}
+.clev li{list-style:none;font-family:var(--mono);font-size:12px;color:var(--dim);padding-left:16px;position:relative;margin-bottom:6px}
+.clev li::before{content:">";position:absolute;left:0;color:var(--violet)}
+
+/* pricing */
+.price{display:grid;grid-template-columns:1fr 1.12fr;gap:24px;align-items:stretch}
+.pc{border:1px solid var(--line);border-radius:14px;padding:36px;background:var(--bg2);display:flex;flex-direction:column;position:relative}
+.pc.rec{border-color:transparent;background:linear-gradient(var(--panel),var(--panel)) padding-box,var(--grad) border-box;border:1px solid transparent;box-shadow:0 0 60px rgba(93,102,246,.18)}
+.pc .pid{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--faint)}
+.pc .pid .rt{color:var(--cyan)}
+.pc h3{font-size:23px;font-weight:700;margin:10px 0 6px;letter-spacing:-.01em}
+.pc .pd{font-size:14.5px;color:var(--dim);margin-bottom:22px}
+.pc .amt{font-family:var(--mono);font-weight:700;font-size:36px;letter-spacing:-.02em}
+.pc .amt span{display:block;font-size:11.5px;font-weight:400;color:var(--faint);margin-top:5px;letter-spacing:.04em}
+.pc ul{margin:22px 0;flex:1}
+.pc li{list-style:none;font-size:14px;color:var(--dim);padding:8px 0 8px 24px;position:relative;border-bottom:1px dashed var(--line)}
+.pc li::before{content:"✓";position:absolute;left:0;color:var(--cyan);font-family:var(--mono)}
+.pc .note{font-family:var(--mono);font-size:11.5px;color:var(--faint);margin-bottom:22px}
+
+/* team */
+.team{display:grid;grid-template-columns:1fr 1fr;gap:24px}
+.tc{border:1px solid var(--line);border-radius:12px;padding:34px;background:var(--bg2);position:relative;overflow:hidden}
+.tc::before{content:"";position:absolute;top:0;left:0;bottom:0;width:3px;background:linear-gradient(180deg,#8b5cf6,#22d3ee)}
+.tc .role{font-family:var(--mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--cyan)}
+.tc h3{font-size:19px;font-weight:700;margin:10px 0 12px}
+.tc p{font-size:14.5px;color:var(--dim);line-height:1.7}
+.tc p b{color:var(--txt);font-weight:600}
+
+/* FAQ */
+.faq details{border:1px solid var(--line);border-radius:10px;margin-bottom:12px;background:var(--bg2);overflow:hidden}
+.faq details[open]{border-color:var(--line2)}
+.faq summary{cursor:pointer;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:20px;padding:22px 26px;font-weight:600;font-size:16.5px}
+.faq summary::-webkit-details-marker{display:none}
+.faq summary .pm{font-family:var(--mono);color:var(--cyan);flex:none;transition:transform .2s;font-size:18px}
+.faq details[open] summary .pm{transform:rotate(45deg)}
+.faq .ans{padding:0 26px 26px;color:var(--dim);font-size:14.5px;line-height:1.7;max-width:74ch}
+
+/* final */
+.final{position:relative;border:1px solid var(--line);border-radius:16px;padding:72px 48px;text-align:center;overflow:hidden;background:var(--panel)}
+.final::before{content:"";position:absolute;inset:-40%;background:radial-gradient(ellipse at 50% 120%,rgba(99,80,246,.28),rgba(34,211,238,.08) 50%,transparent 70%);pointer-events:none}
+.final h2{position:relative;font-size:clamp(26px,3.2vw,38px);font-weight:700;letter-spacing:-.02em;max-width:24ch;margin:0 auto 32px;line-height:1.2}
+.final .btns{position:relative;display:flex;gap:14px;justify-content:center;flex-wrap:wrap}
+
+footer{border-top:1px solid var(--line);padding:30px 0;margin-top:100px}
+.foot{display:flex;justify-content:space-between;flex-wrap:wrap;gap:12px;font-family:var(--mono);font-size:11.5px;color:var(--faint)}
+
+/* reveal */
+.rv{opacity:0;transform:translateY(16px);transition:opacity .55s ease,transform .55s ease}
+.rv.in{opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}}
+
+@media(max-width:960px){
+  .hero-grid{grid-template-columns:1fr}
+  .drow,.dhead{grid-template-columns:44px 1fr}
+  .dhead span:nth-child(3),.dhead span:nth-child(4){display:none}
+  .drow p{grid-column:2}
+  .drow .imp{grid-column:2;justify-self:start}
+  .pstep{grid-template-columns:1fr}
+  .pstep .idx{display:flex;gap:10px;align-items:baseline}
+  .stack{grid-template-columns:repeat(2,1fr)}
+  .fw,.cases,.team,.price{grid-template-columns:1fr}
+  .trio{grid-template-columns:1fr}
+  .trio .cell{border-right:none;border-bottom:1px solid var(--line)}
+  .trio .cell:last-child{border-bottom:none}
+  .nav-links a:not(.btn){display:none}
+  section{padding:68px 0}
+  .final{padding:48px 24px}
+}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="wrap nav-in">
+    <a class="logo" href="#top"><span class="p">~/</span>basis<span class="gt">_</span></a>
+    <div class="nav-links">
+      <a href="#deliverables">deliverables</a>
+      <a href="#process">process</a>
+      <a href="#cases">cases</a>
+      <a href="#pricing">pricing</a>
+      <a href="#faq">faq</a>
+      <a href="#pricing" class="btn btn-grad btn-sm">book audit</a>
+    </div>
+  </div>
+</nav>
+
+<!-- SECTION 1 · HERO -->
+<header class="hero" id="top">
+  <div class="wrap">
+    <div class="hero-grid">
+      <div>
+        <div class="pre rv">
+          <span class="tag">AI FinOps · est. 2026</span>
+          <span>for <b>50–500 person</b> companies · <b>$10k+/mo</b> AI spend</span>
+        </div>
+        <h1 class="rv">Your inference bill grew <span class="gt">70% last quarter.</span> You can't tell which feature caused it.</h1>
+        <p class="sub rv">We instrument, attribute, and cut your AI run-rate <b>20–50% in 30–60 days</b>. Fixed fee, payable only after we've documented <b>≥3× the fee</b> in annualized savings.</p>
+        <div class="hero-cta rv">
+          <a href="#pricing" class="btn btn-grad">book a spend leak audit →</a>
+          <a href="#cases" class="btn btn-line">see modeled cases</a>
+        </div>
+      </div>
+
+      <div class="ledger rv" aria-label="Example cost attribution ledger">
+        <div class="ledger-head"><span>run-rate / monthly</span><span class="live">attributed</span></div>
+        <div class="lrow"><span class="f">rag_assistant</span><span class="a"><s>$18.4k</s><b>$6.7k</b></span></div>
+        <div class="lrow"><span class="f">doc_classifier</span><span class="a"><s>$11.2k</s><b>$1.5k</b></span></div>
+        <div class="lrow"><span class="f">agent_loops</span><span class="a"><s>$6.1k</s><b>$2.9k</b></span></div>
+        <div class="lrow sum"><span class="f">total</span><span class="a"><s>$35.7k</s><b>$11.1k / mo</b></span></div>
+        <div class="lfoot">// modeled scenario · quality held within eval tolerance</div>
+      </div>
+    </div>
+
+    <div class="trio rv">
+      <div class="cell"><div class="k">typical outcome</div><div class="v gt">20–50% cut</div><div class="d">30–60 days · quality held</div></div>
+      <div class="cell"><div class="k">fee structure</div><div class="v">pay on results</div><div class="d">≥3× verified savings, or $0</div></div>
+      <div class="cell"><div class="k">on your account</div><div class="v">two senior eng</div><div class="d">no analysts · no juniors</div></div>
+    </div>
+  </div>
+
+  <div class="ticker" aria-label="Industry statistics on AI spend">
+    <div class="ticker-track">
+      <div class="ti"><span class="n">23%</span><span class="t">of SaaS COGS is now inference</span><span class="s">[ICONIQ]</span></div>
+      <div class="ti"><span class="n">85%</span><span class="t">of CIOs lack real-time AI spend visibility</span><span class="s">[IBM]</span></div>
+      <div class="ti"><span class="n">29%</span><span class="t">of cloud spend is waste, AI-driven</span><span class="s">[Flexera]</span></div>
+      <div class="ti"><span class="n">79%</span><span class="t">of enterprises overspent on AI in 2026</span><span class="s">[DoiT × Sapio]</span></div>
+      <div class="ti"><span class="n">23%</span><span class="t">of SaaS COGS is now inference</span><span class="s">[ICONIQ]</span></div>
+      <div class="ti"><span class="n">85%</span><span class="t">of CIOs lack real-time AI spend visibility</span><span class="s">[IBM]</span></div>
+      <div class="ti"><span class="n">29%</span><span class="t">of cloud spend is waste, AI-driven</span><span class="s">[Flexera]</span></div>
+      <div class="ti"><span class="n">79%</span><span class="t">of enterprises overspent on AI in 2026</span><span class="s">[DoiT × Sapio]</span></div>
+    </div>
+  </div>
+</header>
+
+<!-- SECTION 2 · DELIVERABLES -->
+<section id="deliverables">
+  <div class="wrap">
+    <div class="sh rv">
+      <span class="tag">deliverables</span>
+      <h2>Four deliverables. In this order.</h2>
+      <p>Not a strategy deck. Code that lands in your repo and dashboards that live in your stack.</p>
+    </div>
+    <div class="dtable rv">
+      <div class="dhead"><span>#</span><span>deliverable</span><span>what ships</span><span>impact</span></div>
+      <div class="drow">
+        <span class="n">01</span>
+        <h3>Attribution</h3>
+        <p>Per-feature, per-customer, per-environment cost telemetry wired into your existing gateway. Every dollar gets an owner.</p>
+        <span class="imp">foundational</span>
+      </div>
+      <div class="drow">
+        <span class="n">02</span>
+        <h3>Model routing</h3>
+        <p>Classification and rewrite traffic doesn't need frontier models. We map task families, build the routing layer, verify quality per route via evals.</p>
+        <span class="imp">40–85% on routed</span>
+      </div>
+      <div class="drow">
+        <span class="n">03</span>
+        <h3>Prompt &amp; semantic caching</h3>
+        <p>Most RAG templates and agent loops have repeating prefixes nobody caches. Native caching + a semantic layer for FAQ shapes. Stale-cache handled at architecture level.</p>
+        <span class="imp">−90% cached input</span>
+      </div>
+      <div class="drow">
+        <span class="n">04</span>
+        <h3>Fine-tuned task models</h3>
+        <p>For high-volume narrow tasks — extraction, classification, structured output. Eval design, training, deployment. We don't propose this when it doesn't pay back.</p>
+        <span class="imp">70–90% targeted</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- SECTION 3 · PROCESS -->
+<section id="process">
+  <div class="wrap">
+    <div class="sh rv">
+      <span class="tag">process</span>
+      <h2>How a Sprint runs.</h2>
+      <p>Eight weeks, fixed scope. Every phase ties to a public artifact — nothing about the method is proprietary.</p>
+    </div>
+    <div class="proc">
+      <div class="pstep rv">
+        <div class="idx"><b>01</b>phase</div>
+        <div>
+          <h3>Attribution wired end-to-end.</h3>
+          <p>Read-only access to your gateway and provider accounts. Every call mapped to a feature, cohort, environment. We use your existing tools.</p>
+        </div>
+        <div class="art"><span class="k">backed by</span><b>the audit checklist</b><br>github.com/basis-finops</div>
+      </div>
+      <div class="pstep rv">
+        <div class="idx"><b>02</b>phase</div>
+        <div>
+          <h3>Top 3 leaks. Written. Ranked.</h3>
+          <p>By end of week 2, a written diagnosis: where the spend is, what's recoverable, what the fix is, what it'll save. If we can't find 3× the fee, we stop here at no cost.</p>
+        </div>
+        <div class="art"><span class="k">priced against</span><b>cost-per-token tracker</b><br>every provider, weekly</div>
+      </div>
+      <div class="pstep rv">
+        <div class="idx"><b>03</b>phase</div>
+        <div>
+          <h3>Routing &amp; caching shipped.</h3>
+          <p>Code lands in your repo with your review. Evals run before and after every change. Quality must hold within tolerance bands you set in week 1, or the change is reverted.</p>
+        </div>
+        <div class="art"><span class="k">reference</span><b>past teardowns</b><br>typical fix patterns</div>
+      </div>
+      <div class="pstep rv">
+        <div class="idx"><b>04</b>phase</div>
+        <div>
+          <h3>Task model trained — if it pays back.</h3>
+          <p>Only when routing surfaced a workload with both volume and a narrow task definition. Often skipped. We're honest when this isn't the right move.</p>
+        </div>
+        <div class="art"><span class="k">verified by</span><b>eval suite in CI</b><br>your team, going forward</div>
+      </div>
+      <div class="pstep rv">
+        <div class="idx"><b>05</b>phase</div>
+        <div>
+          <h3>Make it your team's, not ours.</h3>
+          <p>Runbooks, on-call docs, eval suite checked into CI. 30-day check-in included. Your team extends the work. We don't engineer dependency.</p>
+        </div>
+        <div class="art"><span class="k">output</span><b>verified savings report</b><br>signed off, reproducible</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 4 · STACK -->
+<section id="stack" style="padding-top:0">
+  <div class="wrap">
+    <div class="sh rv">
+      <span class="tag">stack</span>
+      <h2>Native to the tools your team already uses.</h2>
+      <p>No proprietary platform. No migration. These are the providers, gateways, and infra we operate in daily.</p>
+    </div>
+    <div class="stack rv">
+      <div class="scell">OpenAI</div>
+      <div class="scell">Anthropic</div>
+      <div class="scell">AWS Bedrock</div>
+      <div class="scell">Azure</div>
+      <div class="scell">Hugging Face</div>
+      <div class="scell">Mistral</div>
+      <div class="scell">Google Vertex</div>
+      <div class="scell">Meta / Llama</div>
+      <div class="scell">LangChain</div>
+      <div class="scell">Datadog</div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 5 · FRAMEWORKS -->
+<section id="frameworks" style="padding-top:0">
+  <div class="wrap">
+    <div class="sh rv">
+      <span class="tag">method</span>
+      <h2>The frameworks our method draws from.</h2>
+      <p>Public standards, published research, and open-source work the basis checklist and cost model reference. All cited in the methodology repo.</p>
+    </div>
+    <div class="fw">
+      <div class="fwc rv"><h3>FinOps Foundation</h3><p>practitioner cert · contributor</p></div>
+      <div class="fwc rv"><h3>AWS Well-Architected</h3><p>cost optimization pillar</p></div>
+      <div class="fwc rv"><h3>ICONIQ Growth</h3><p>SaaS margin benchmarks</p></div>
+      <div class="fwc rv"><h3>Google SRE</h3><p>reliability &amp; on-call methodology</p></div>
+      <div class="fwc rv"><h3>OpenLLMetry</h3><p>open source · contributor</p></div>
+      <div class="fwc rv"><h3>Anthropic Cookbook</h3><p>caching &amp; batch patterns</p></div>
+    </div>
+  </div>
+</section>
+
+<hr class="rule">
+
+<!-- SECTION 6 · CASES -->
+<section id="cases">
+  <div class="wrap">
+    <div class="sh rv">
+      <span class="tag">modeled scenarios</span>
+      <h2>What a Sprint is designed to deliver.</h2>
+      <p>Three modeled scenarios, mapped to the ICPs we're built for. Numbers derived from published pricing and margin benchmarks.</p>
+    </div>
+    <div class="cases">
+      <div class="case rv">
+        <div class="chead"><div class="cid">case // A</div><h3>AI-native SaaS · Series B · ~120 people</h3></div>
+        <div class="cbody">
+          <div class="crw"><span class="l">RAG assistant</span><span class="a"><s>$18.4k</s>→ <b>$6.7k</b></span></div>
+          <div class="crw"><span class="l">Doc classifier</span><span class="a"><s>$11.2k</s>→ <b>$1.5k</b></span></div>
+          <div class="crw tot"><span class="l">monthly</span><span class="a"><s>$29.6k</s>→ <b>$8.2k</b></span></div>
+        </div>
+        <div class="clev"><div class="k">levers modeled</div><ul>
+          <li>prefix cache on system prompt</li>
+          <li>fine-tuned Llama 3 8B classifier</li>
+        </ul></div>
+      </div>
+      <div class="case rv">
+        <div class="chead"><div class="cid">case // B</div><h3>SaaS + bolted AI · Series C · ~200 people</h3></div>
+        <div class="cbody">
+          <div class="crw"><span class="l">In-app copilot</span><span class="a"><s>$14.8k</s>→ <b>$6.9k</b></span></div>
+          <div class="crw"><span class="l">Auto-tagging</span><span class="a"><s>$4.2k</s>→ <b>$0.9k</b></span></div>
+          <div class="crw tot"><span class="l">monthly</span><span class="a"><s>$19.0k</s>→ <b>$7.8k</b></span></div>
+        </div>
+        <div class="clev"><div class="k">levers modeled</div><ul>
+          <li>routing by request shape</li>
+          <li>output token caps per route</li>
+        </ul></div>
+      </div>
+      <div class="case rv">
+        <div class="chead"><div class="cid">case // C</div><h3>Content agency · Bootstrapped · ~80 people</h3></div>
+        <div class="cbody">
+          <div class="crw"><span class="l">Client drafting</span><span class="a"><s>$7.4k</s>→ <b>$3.1k</b></span></div>
+          <div class="crw"><span class="l">Translation pipe</span><span class="a"><s>$3.6k</s>→ <b>$1.3k</b></span></div>
+          <div class="crw tot"><span class="l">monthly</span><span class="a"><s>$11.0k</s>→ <b>$4.4k</b></span></div>
+        </div>
+        <div class="clev"><div class="k">levers modeled</div><ul>
+          <li>per-client attribution + showback</li>
+          <li>tier drop on batch workloads</li>
+        </ul></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 7 · PRICING -->
+<section id="pricing">
+  <div class="wrap">
+    <div class="sh rv">
+      <span class="tag">pricing</span>
+      <h2>Visible. Aligned with savings. No retainer.</h2>
+      <p>Two engagements. First is free. Second is paid only after we've documented ≥3× the fee in annualized savings.</p>
+    </div>
+    <div class="price">
+      <div class="pc rv">
+        <div class="pid">engagement 01</div>
+        <h3>Spend Leak Audit</h3>
+        <p class="pd">30-minute call + 1-page written diagnosis. No engagement obligation.</p>
+        <div class="amt">$0<span>no card · no sales pitch</span></div>
+        <ul>
+          <li>cost-per-feature estimate from your billing data</li>
+          <li>the top 3 leaks we'd expect in your stack</li>
+          <li>annualized savings range, written, signed</li>
+        </ul>
+        <p class="note">// most audits do not lead to a Sprint. that's fine.</p>
+        <a href="#final" class="btn btn-line">book audit</a>
+      </div>
+      <div class="pc rec rv">
+        <div class="pid">engagement 02 · <span class="rt">recommended</span></div>
+        <h3>Cost Control Sprint</h3>
+        <p class="pd">4–8 weeks, fixed scope. Code shipped, dashboards live, evals green.</p>
+        <div class="amt gt">$45–95k<span>paid only on verified 3× ROI</span></div>
+        <ul>
+          <li>attribution dashboards in your existing tools</li>
+          <li>routing + caching layers with evals</li>
+          <li>fine-tuned task model where the math pays back</li>
+          <li>runbooks, on-call docs, 30-day check-in</li>
+        </ul>
+        <p class="note">// if verified savings &lt; 3× fee, you owe nothing</p>
+        <a href="#final" class="btn btn-grad">start with an audit →</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 8 · TEAM -->
+<section id="team" style="padding-top:0">
+  <div class="wrap">
+    <div class="sh rv">
+      <span class="tag">team</span>
+      <h2>Two senior operators. Nothing below.</h2>
+      <p>One from ML engineering. One from finance. Both ship. Neither pitches. If you wouldn't hire either of them directly, you shouldn't hire basis.</p>
+    </div>
+    <div class="team">
+      <div class="tc rv">
+        <div class="role">engineering · inference</div>
+        <h3>[Founder 1]</h3>
+        <p>Previously <b>Staff Engineer at [prior AI infra co]</b>, where they built the inference-cost attribution layer that took LLM run-rate from $X/mo to $Y/mo across 14 production workloads. Before that: ML Platform at [Series C SaaS]. <b>ML engineering by background, not consulting.</b></p>
+      </div>
+      <div class="tc rv">
+        <div class="role">finops · financial operator</div>
+        <h3>[Founder 2]</h3>
+        <p>Previously <b>Head of FinOps at [prior SaaS co]</b> through the Series B→C transition. Built the AI cost-attribution reporting that defended gross margin during the AI seat rollout. <b>Financial operator by background, not consulting either.</b></p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 9 · FAQ -->
+<section id="faq" style="padding-top:0">
+  <div class="wrap">
+    <div class="sh rv">
+      <span class="tag">faq</span>
+      <h2>Answered straight.</h2>
+      <p>Not marketing FAQ. Questions every prospect actually asks on call one.</p>
+    </div>
+    <div class="faq rv">
+      <details>
+        <summary>We tried this internally for two weeks and gave up. What's different?<span class="pm">+</span></summary>
+        <p class="ans">Internal attempts usually stall at attribution — the gateway isn't emitting per-feature telemetry, so every optimization is a guess. We arrive with the instrumentation checklist, a per-provider price tracker, and an eval harness already built. Your engineers keep shipping product; we do the part that keeps getting deprioritized.</p>
+      </details>
+      <details>
+        <summary>How do you prove the savings aren't just attribution shifting?<span class="pm">+</span></summary>
+        <p class="ans">Baseline is frozen in week 1 in your own billing data, per route, with traffic volume held constant in the model. Every saving in the final report is reproducible from your provider invoices — not our dashboard. If a number can't be recomputed by your finance team, it doesn't count toward the 3×.</p>
+      </details>
+      <details>
+        <summary>What happens when you leave?<span class="pm">+</span></summary>
+        <p class="ans">Everything lives in your repo and your tools: dashboards, routing code, cache config, runbooks, and the eval suite in CI. There's no basis agent running in your stack and no license to renew. A 30-day check-in is included; after that your team extends the work — that's the design goal, not a concession.</p>
+      </details>
+      <details>
+        <summary>Our spend is "only" $10–20k/month. Is this worth it?<span class="pm">+</span></summary>
+        <p class="ans">At $12k/month, a mid-range 35% cut is roughly $50k/year — which clears the 3× bar on the low end of the Sprint fee. If the audit shows it won't clear, we say so in writing and stop there. That's exactly what the free audit is for.</p>
+      </details>
+    </div>
+  </div>
+</section>
+
+<!-- SECTION 10 · FINAL CTA -->
+<section id="final" style="padding-top:0">
+  <div class="wrap">
+    <div class="final rv">
+      <h2>The audit is free. The diagnosis is written. The decision is yours.</h2>
+      <div class="btns">
+        <a href="#" class="btn btn-grad">book a spend leak audit →</a>
+        <a href="#" class="btn btn-line">get the teardown pdf</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <span>© 2026 basis · AI FinOps</span>
+    <span>github.com/basis-finops · methodology repo</span>
+  </div>
+</footer>
+
+<script>
+const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add('in');io.unobserve(e.target)}}),{threshold:.12});
+document.querySelectorAll('.rv').forEach(el=>io.observe(el));
+</script>
+</body>
+</html>
